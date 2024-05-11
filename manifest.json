@@ -1,0 +1,35 @@
+{
+  "name": "学习通自动连播",
+  "version": "0.0.0.1",
+  "manifest_version": 3,
+  "description": "学习通自动连播插件.",
+  "action": {
+      "default_popup": "popup.html",
+      "default_icon": "icons/1.png"
+  },
+  "icons": {
+      "48": "icons/1.png"
+  },
+  "permissions": [
+      "storage",
+      "contextMenus",
+      "notifications"
+  ],
+  "background": {
+      "service_worker": "js/background.js"
+  },
+  "content_scripts": [
+      {
+        "matches": ["https://www.baidu.com////*"],
+        "run_at": "document_end",
+        "js": ["js/content.js"],
+        "css": ["css/content.css"]
+      },
+      {
+        "matches": ["https://mooc1.chaoxing.com/*"],
+        "run_at": "document_end",
+        "js": ["js/content.js"],
+        "css": ["css/content.css"]
+      }
+  ]
+}
