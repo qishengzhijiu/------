@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+<meta charset="UTF-8"> <!-- 重要！确保使用 UTF-8 编码 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <head>
     <style>
@@ -12,23 +14,114 @@
             margin: 0;
             padding: 0;
         }
+
         button {
-            margin-top: 10px;
+            flex-wrap: wrap;
             padding: 10px;
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 5px;
         }
 
+        div {
+            display: flex;
+            margin-top: 10px;
+            width: 250px;
+            height: auto;
+            background-color: #f2f2f2;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        #submitButton {
+            margin: 0 auto;
+            width: 80%;
+        }
+
+        input {
+            width: 250px;
+            height: auto;
+            border-radius: 5px;
+            padding: 10px
+        }
+
+        li:hover {
+            background-color: #0056b3;
+        }
+
+        li:last-child {
+            margin-bottom: 0;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            font-size: 15px;
+        }
+
+        ul {
+            list-style-type: none;
+            /* 去掉默认的项目符号 */
+            padding: 0;
+            width: 80%;
+        }
+
+        li {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            justify-content: center;
+            display: flex;
+        }
+
+        .list-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        #changeDOMButton {
+            margin: auto;
+        }
+        #changeDOMButton1 {
+            margin: auto;
+        }
     </style>
+
+
+
 </head>
 
+
+
 <body>
-   <button id="changeDOMButton">pasue auto play</button>
-   <button id="changeDOMButton1">continue auto play</button>
-   <script src="js/popup.js"></script>
+    <div>
+    <button id="changeDOMButton">停止播放程序</button>
+    <button id="changeDOMButton1">重新运行程序</button>
+    </div>
+    <h2>建议前台运行，后台运行可能不会成功</h2>
+    <h2>只要在视频标题中出现以下关键词，则排除在外</h2>
+    <div class="list-container">
+        <ul id="match-list">
+            <!-- 动态生成的列表项将插入这里 -->
+        </ul>
+    </div>
+    <div id="submitDiv">
+        <input type="text" placeholder="在这里输入关键词 ">
+    </div>
+    <div>
+        <button id="submitButton">submit</button>
+    </div>
+
+    <script src="js/popup.js"></script>
 </body>
 
 </html>

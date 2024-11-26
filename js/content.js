@@ -1,120 +1,193 @@
-console.log("content.js is running");
-// document.querySelector("#kw").style.backgroundColor="red"
-
-async function start(start_i) {
-  // do something
-  // try{ 
-  //   var find_element=document.querySelector("#mainid > div.prev_title_pos > div")
-  //   if(find_element.textContent="学习视频"){
-  //     setTimeout(function() { 
-  //         document.querySelector("#prevNextFocusNext").click();
-  //      }, 5000);
-  //   }
-  // }
-  //   catch(e){
-  //     console.log("捕获到错误",e);
-  //   }
-  if (globalThis.startcontinue == false) {
-    console.log("startcontinue is false,退出函数"); // 如果是false，就退出函数
-    return;
+function FindUnfinishClass() {
+  let Class = document.querySelectorAll(
+    "div.posCatalog_select:not(.firstLayer)"
+  );
+  var UnfininshClass = [];
+  console.log("具有以下的课程未完成");
+  Class.forEach((div) => {
+    let span = div.querySelectorAll("span.catalog_points_yi.prevTips");
+    span.forEach((span) => {
+      UnfininshClass.push(div);
+      console.log(div.querySelector(".posCatalog_name").textContent);
+    });
+    // console.log(UnfininshClass);
+  });
+  // 拿到未学习的课程
+  if (UnfininshClass.length == 0) {
+    console.log("没有未完成的课程");
+    stoprun = true;
   }
-  if (start_i == 1) {
-    globalThis.startcontinue = false; // 下一次循环退出函数，直到视频播放完成
-    console.log("程序开始");
-  }
+  return UnfininshClass;
+}
+function VideoPlayingCLass() {
+  playingClass = document.querySelector(".posCatalog_active");
+  return playingClass;
+}
 
-  setTimeout(async function () {
-    var iframe = document.querySelector("iframe");
-    var innerDoc = iframe.contentWindow.document; // 第一层iframe
-    var iframe2 = innerDoc.querySelectorAll("iframe");
-    
+function videoPlay() {
+  var iframe = document.querySelector("iframe");
+  var innerDoc = iframe.contentWindow.document; // 获取第一个 iframe 的文档
+  var iframe2 = innerDoc.querySelectorAll("iframe"); // 获取所有子 iframe
+
+  async function playAllVideos() {
     if (iframe2.length > 1) {
       // 如果有多个 iframe
       for (let j = 0; j < iframe2.length; j++) {
         var innerDoc2 = iframe2[j].contentWindow.document;
-        // 使用 await 确保每次 seek() 完成后再执行下一个
-        await seek(j, iframe2.length, innerDoc2);
+        // 等待 iframe 加载完成后再播放
+        await waitForIframeToLoad(innerDoc2);
+        await playVideo(innerDoc2, j, iframe2); // 等待视频播放完再继续下一个
       }
     } else {
       // 如果只有一个 iframe
       var innerDoc2 = iframe2[0].contentWindow.document;
-      var length = iframe2.length;
-      await seek(0, length, innerDoc2);
+      // 等待 iframe 加载完成后再播放
+      await waitForIframeToLoad(innerDoc2);
+      await playVideo(innerDoc2, 0, iframe2);
     }
+  }
+
+  // 等待 iframe 加载完成
+  async function waitForIframeToLoad(innerDoc2) {
+    return new Promise((resolve) => {
+      var checkInterval = setInterval(() => {
+        // 检查 video 元素是否已加载
+        var video = innerDoc2.querySelector("video");
+        if (video) {
+          clearInterval(checkInterval); // 找到视频后停止检查
+          resolve(); // 继续执行
+        }
+      }, 500); // 每500ms检查一次
+    });
+  }
+
+  // 播放视频的函数
+  async function playVideo(innerDoc2, j, iframe2) {
+    var video = innerDoc2.querySelector("video");
+    if (video) {
+      await new Promise((resolve) => {
+        video.playrate = 2; // 设置播放速率
+        video.play();
+        video.onended = function () {
+          console.log("播放结束");
+          if ((stoprun == false) & (j == iframe2.length - 1)) {
+            main();
+          }
+          // 视频播放完后执行下一个
+          resolve(); // 视频播放完后继续
+        };
+      });
+    } else {
+      console.log("没有找到视频元素");
+    }
+  }
+
+  // 执行播放视频的异步函数
+  playAllVideos();
+}
+
+function SelectUnfinishClass(UnfininshClass) {
+  if (firstrun == true) {
+    firstrun = false;
+    return;
+  }
+  i = 0;
+  // if(globalThis.isPPTOrEmpty==true){
+  //     console.log("是ppt或者空白页面,点击下一个");
+  //     i=1;
+  // }
+  let ID = UnfininshClass[i].id;
+  let ClassNeedClick = document.querySelector(`#${ID} span`);
+  ClassNeedClick.click();
+}
+
+function judgementIsPPTOrEmpty(playingClass, UnfininshClass) {
+  let TextContent = playingClass.textContent; // 获取 TextContent
+  // let match = TextContent.match(/.*学习视频.*/);
+  // let match2 = TextContent.match(/.*PPT.*/);
+
+  // 逆序遍历 UnfininshClass，避免删除元素时影响索引
+  for (let i = UnfininshClass.length - 1; i >= 0; i--) {
+    let element = UnfininshClass[i];
+
+    // 遍历 matchs 数组
+    for (let match of matchs) {
+      // 使用 RegExp 构造函数来创建正则表达式，动态插入变量
+      let regex = new RegExp(`.*${match}.*`);
+
+      // 如果匹配到，就删除该元素
+      if (regex.test(element.textContent)) {
+        UnfininshClass.splice(i, 1);
+        break; // 删除后跳出循环，不需要再检查其他匹配项
+      }
+    }
+  }
+
+  console.log("经过输入的列表删除之后，现在剩下以下未完成的视频:");
+  UnfininshClass.forEach((div) => {
+    let TextContent = div.querySelector(".posCatalog_name").textContent;
+    console.log(TextContent);
+  });
+}
+
+// if (match || match2) {
+//     console.log("是ppt或者空白页面");
+//     globalThis.isPPTOrEmpty = true;
+//     firstrun=false;
+// } else {
+//     console.log("不是空白页，继续执行");
+//     globalThis.isPPTOrEmpty = false;
+// }
+
+function wait() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log("Wait is over!");
+      resolve();
+    }, 3000);
+  });
+}
+
+function main() {
+  let UnfininshClass = FindUnfinishClass();
+  let playingClass = VideoPlayingCLass();
+  judgementIsPPTOrEmpty(playingClass, UnfininshClass);
+  SelectUnfinishClass(UnfininshClass);
+  setTimeout(function () {
+    videoPlay();
   }, 5000);
 }
+let matchs = [];
+chrome.storage.local.get("matchs", function (result) {
+  matchs = result.matchs || []; // 获取 matchs 数据
+  console.log("获取到的 matchs: ", matchs);
+});
 
-async function seek(j, length, innerDoc2) {
-  var video = innerDoc2.querySelector("video");
-  if (video) {
-    console.log("找到了<video>元素！,这是video");
-    if (video.paused) {
-      video.play();
-      setTimeout(function () {
-        if (start_i == 1) {
-          video.playbackRate = 2;
-        }
-      }, 2000);
-      setTimeout(function () {
-        if (video.paused) {
-          video.play();
-        }
-      }, 5000);
-
-      video.onended = function () {
-        console.log("视频播放结束");
-        console.log("第%d个视频播放结束", j + 1);
-        if (j == length - 1) {
-          globalThis.startcontinue = true;
-        }
-
-        document.querySelector("#prevNextFocusNext").click();
-      };
-    }
-  }
-
-  if (start_i == 1) {
-    alert("学习通自动播放脚本\n开始自动连播");
-  }
-
-  if (!video) {
-    var imgElement = innerDoc2.querySelectorAll("img");
-    console.log("找到了<img>元素个数为", imgElement.length);
-    // 如果找到了<img>元素，执行相应的代码
-    if (imgElement.length > 1) {
-      console.log("找到了<img>元素！,这是ppt");
-
-      setTimeout(function () {
-        document.querySelector("#prevNextFocusNext").click();
-        var button = document.querySelector(
-          "#mainid > div.maskDiv.jobFinishTip.maskFadeOut > div > div.popBottom > a.jb_btn.jb_btn_92.fr.fs14.nextChapter"
-        );
-        button.click();
-        globalThis.startcontinue = true;
-      }, 3000);
-    }
-  }
-}
-
-start(1);
-
-// 定义一个要重复执行的函数
-function doSomethingRepeatedly() {
-  start();
-}
-
-var startcontinu; // 设置一个全局变量，用于控制循环的退出
-
-// 设置一个每隔一段时间就执行一次的定时器
-let intervalId = setInterval(doSomethingRepeatedly, 15000);
+firstrun = false; // 调试用的参数，ture第一次不跳转没有完成的页面,false跳转
+stoprun = false; //停止运行的参数，ztrue停止运行，false继续运行,知道全部课程完成后函数结束
+setTimeout(function () {
+  main();
+}, 3000); // 延迟3秒执行
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.action === "paused") {
-    clearInterval(intervalId);
-    alert("学习通自动播放脚本\n已经停止定时器\n自动连播已经停止\n当前页面脚本控制失效");
+    stoprun = true;
+    alert(
+      "学习通自动播放脚本\n已经停止定时器\n自动连播已经停止\n当前页面脚本控制失效"
+    );
   }
   if (message.action === "continue") {
-    intervalId = setInterval(doSomethingRepeatedly, 10000);
-    alert("学习通自动播放脚本\n已经恢复定时器\n自动连播已经恢复\n当前页面脚本控制生效");
+    main();
+    alert(
+      "学习通自动播放脚本\n已经恢复定时器\n自动连播已经恢复\n当前页面脚本控制生效"
+    );
+  }
+  if (message.action == "getmatchs") {
+    sendmatchs();
   }
 });
+
+// popup.js发送消息
+function sendmatchs() {
+  chrome.runtime.sendMessage({ action: "sendmatchs", matchs: matchs });
+}
